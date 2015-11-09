@@ -300,16 +300,14 @@ Double get3cha_weightVal(int input, Double orgPxAdr, Double alpha) {
 }
 
 Double getBSpl_weightVal(int input, Double orgPxAdr) {
-	double temp = orgPxAdr - input;
+	double temp = orgPxAdr - (Double)input;
 	if (temp < 0)temp = temp * (-1);
 
-	//     1/2 |??|^3?|??|^2+2/3
 	if (0 <= temp && temp < 1) {
-		return ((1/2)*pow(temp, 3)) - (pow(temp, 2)) + (2/3);
+		return ((double)((double)1 / (double)2))*pow(temp, 3) - pow(temp, 2) + ((double)2 / (double)3);
 	}
-	//  ?1/6 |??|^3+|??|^2?2|??|  +  4/3
 	else if (1 <= temp && temp < 2) {
-		return ((-1)/6 * pow(temp, 3)) + (pow(temp, 2)) - (2*temp) + (4/3);
+		return (((double)-1)/ (double)6 * pow(temp, 3)) + (pow(temp, 2)) - (2*temp) + ((double)4/ (double)3);
 	}
 	else if (2 <= temp) {
 		return 0;
