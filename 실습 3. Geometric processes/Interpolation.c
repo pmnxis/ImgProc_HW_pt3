@@ -31,20 +31,20 @@ void Interpolation( Buf *DB )
 			printf("\n다시 입력 하세요!!\n");
 	}
 	
-	for( i=0; i<COL; i++ )
+	for( i=0; i<DB->SRow ; i++ )
 	{
-		for( j=0; j<DB->SRow; j++ )
+		for( j=0; j<COL; j++ )
 		{
 		
-
+			//  실수로  Dir을 함수내부에서 거꾸로 처리하게되서... 1->0 , 0->1합니다..
 			if( Num == 1 )
-				NearesetNeighbor( DB, i, j, Spacing, 0, DB->SRow, COL );
+				NearesetNeighbor( DB, i, j, Spacing, 1, DB->SRow, DB->SCol );
 			else if( Num == 2 )
-				Bilinear( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, COL );
+				Bilinear( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol);
 			else if( Num == 3 )
-				CubicConvolution( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, COL );
+				CubicConvolution( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol);
 			else if( Num == 4 )
-				B_Spline( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, COL );
+				B_Spline( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol);
 		}
 	}
 
@@ -57,13 +57,13 @@ void Interpolation( Buf *DB )
 			
 
 			if( Num == 1 )
-				NearesetNeighbor( DB, i, j, Spacing, 1, DB->SRow, DB->SCol );
+				NearesetNeighbor( DB, i, j, Spacing, 0, DB->SRow, DB->SCol );
 			else if( Num == 2 )
-				Bilinear( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol );
+				Bilinear( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, DB->SCol );
 			else if( Num == 3 )
-				CubicConvolution( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol );
+				CubicConvolution( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, DB->SCol );
 			else if( Num == 4 )
-				B_Spline( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol );
+				B_Spline( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, DB->SCol );
 		}
 	}
 
@@ -99,15 +99,15 @@ void NearesetNeighbor(Buf *DB, Int i, Int j, Double Spacing, Int Dir, Int CRow, 
 	if (Dir)
 	{
 		//  가우스처리
-		temp = j / CRow*ROW;
+		temp = ((double)i *(double)ROW / (double)CRow);
 		//  get error
-		DB->RowScalingImg[i*CRow + j] = DB->Input[i*ROW + (int)temp];
+		DB->RowScalingImg[i*COL + j] = DB->Input[(int)temp*COL + j];
 	}
 	else
 	{
+		temp = ((double)j *(double)COL) / (double)CCol;
 		//  가우스처리
-		temp = i / CCol*COL;
-		DB->AllScalingImg[i*CRow + j] = DB->RowScalingImg[(int)temp*CRow + j];
+		DB->AllScalingImg[i*CCol + j] = DB->RowScalingImg[i*COL + (int)temp];
 	}
 }
 
@@ -120,38 +120,38 @@ void Bilinear(Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir,
 	double temp;
 	if (Dir)  //  row
 	{
-		temp = j / CRow*ROW;
-		rX = (int)temp;
-		dLeft = temp - rX;
-		if (dLeft == 0.00) {
+		temp = ((double)i *(double)ROW / (double)CRow);
+		rY = (int)temp;
+		dUp = temp - rY;
+		if (dUp == 0.00) {
 			//  get error
-			DB->RowScalingImg[i*CRow + j] = DB->Input[i*ROW + rX];
+			DB->RowScalingImg[i*COL + j] = DB->Input[rY*COL + j];
 		}
-		else if (rX >= 0 && rX <= ROW - 2) {
-			dRight = 1.0 - dLeft;
-			temp = (DB->Input[i*ROW + rX])*dRight + (DB->Input[i*ROW + rX + 1] * dLeft);
-			DB->RowScalingImg[i*CRow + j] = (UChar)temp;
+		else if (rY >= 0 && rY <= COL - 2) {
+			dDown = 1.0 - dUp;
+			temp = ((double)DB->Input[rY*COL + j])*dDown + ((double)DB->Input[COL * (rY+1) + j] * dUp);
+			DB->RowScalingImg[i*COL + j] = (UChar)temp;
 		}
-		else if (rX >= CRow - 1)
+		else if (rY >= CRow - 1)
 		{
-			DB->RowScalingImg[i*CRow + j] = DB->Input[i*ROW + rX];
+			DB->RowScalingImg[i*COL + j] = DB->Input[rY*COL + j];
 		}
 	}
 	else  //  all
 	{
-		temp = i / CCol*COL;
-		rY = (int)temp;
-		dUp = temp - rY;
-		if (dUp == 0.00) {
-			DB->AllScalingImg[i*CRow + j] = DB->RowScalingImg[rY*CRow + j];
+		temp = ((double)j *(double)COL) / (double)CCol;
+		rX = (int)temp;
+		dLeft = temp - rX;
+		if (dLeft == 0.00) {
+			DB->AllScalingImg[i*CCol + j] = DB->RowScalingImg[COL*i + (rX)];
 		}
-		else if (rY >= 0 && rY <= COL - 2) {
-			dDown = 1.0 - dUp;
-			temp = (DB->RowScalingImg[rY*CRow + j] * dDown + (DB->RowScalingImg[(rY + 1)*CRow + j])*dUp);
-			DB->AllScalingImg[i*CRow + j] = (UChar)temp;
+		else if (rX >= 0 && rX <= COL - 2) {
+			dRight = 1.0 - dLeft;
+			temp = ((double)DB->RowScalingImg[COL*i + (rX)] * dRight + ((double)DB->RowScalingImg[COL*i+(rX + 1)])*dLeft);
+			DB->AllScalingImg[i*CCol + j] = (UChar)temp;
 		}
-		else if (rY >= CCol - 1) {
-			DB->AllScalingImg[i*CRow + j] = DB->RowScalingImg[rY*CRow + j];
+		else if (rX >= CCol - 1) {
+			DB->AllScalingImg[i*CCol + j] = DB->RowScalingImg[rX*CCol + j];
 		}
 	}
 }
@@ -165,24 +165,17 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 	if( Dir )
 	{
 		// recheck col and row after go home
-		orgPxPoint = j / CCol * COL;
+		orgPxPoint = ((double)i *(double)ROW / (double)CRow);
 		P0 = (int)(orgPxPoint - 1);
 		P1 = (int)(orgPxPoint);
 		P2 = (int)(orgPxPoint + 1);
 		P3 = (int)(orgPxPoint + 2);
 
-		/*
-		P1 = insteadPad(orgPxPoint, CCol);
-		P0 = insteadPad(orgPxPoint - 1, CCol);
-		P2 = insteadPad(orgPxPoint + 1, CCol);
-		P3 = insteadPad(orgPxPoint + 2, CCol);
-		*/
-
 		//  SAVE REAL VALUE FROM ARR.
-		R0 = DB->Input[i * COL + insteadPad(P0, COL)];
-		R1 = DB->Input[i * COL + insteadPad(P1, COL)];
-		R2 = DB->Input[i * COL + insteadPad(P2, COL)];
-		R3 = DB->Input[i * COL + insteadPad(P3, COL)];
+		R0 = DB->Input[ insteadPad(P0, ROW) * COL + j ];
+		R1 = DB->Input[ insteadPad(P1, ROW) * COL + j ];
+		R2 = DB->Input[ insteadPad(P2, ROW) * COL + j ];
+		R3 = DB->Input[ insteadPad(P3, ROW) * COL + j ];
 
 		// GET WEIGHT VALUE
 		W0 = get3cha_weightVal(P0, orgPxPoint, 0.5);
@@ -192,22 +185,21 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 
 		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
 		//  get error 
-		DB->RowScalingImg[i*CCol + j] = (UChar)calcVal;
+		DB->RowScalingImg[i*COL + j] = (UChar)calcVal;
 	}
 	else
 	{
-		orgPxPoint = i / CRow * ROW;
+		orgPxPoint = ((double)j *(double)COL) / (double)CCol;
 
 		P0 = (int)(orgPxPoint - 1);
 		P1 = (int)(orgPxPoint);
 		P2 = (int)(orgPxPoint + 1);
 		P3 = (int)(orgPxPoint + 2);
-		
-	
-		R0 = DB->RowScalingImg[(insteadPad(P0, ROW))*CCol + j];
-		R1 = DB->RowScalingImg[(insteadPad(P1, ROW))*CCol + j];
-		R2 = DB->RowScalingImg[(insteadPad(P2, ROW))*CCol + j];
-		R3 = DB->RowScalingImg[(insteadPad(P3, ROW))*CCol + j];
+
+		R0 = DB->Input[i * COL + insteadPad(P0, COL)];
+		R1 = DB->Input[i * COL + insteadPad(P1, COL)];
+		R2 = DB->Input[i * COL + insteadPad(P2, COL)];
+		R3 = DB->Input[i * COL + insteadPad(P3, COL)];
 
 		W0 = get3cha_weightVal(P0, orgPxPoint, 0.5);
 		W1 = get3cha_weightVal(P1, orgPxPoint, 0.5);
@@ -229,24 +221,17 @@ void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 	if (Dir)
 	{
 		// recheck col and row after go home
-		orgPxPoint = j / CCol * COL;
+		orgPxPoint = ((double)i *(double)ROW / (double)CRow);
 		P0 = (int)(orgPxPoint - 1);
 		P1 = (int)(orgPxPoint);
 		P2 = (int)(orgPxPoint + 1);
 		P3 = (int)(orgPxPoint + 2);
 
-		/*
-		P1 = insteadPad(orgPxPoint, CCol);
-		P0 = insteadPad(orgPxPoint - 1, CCol);
-		P2 = insteadPad(orgPxPoint + 1, CCol);
-		P3 = insteadPad(orgPxPoint + 2, CCol);
-		*/
-
 		//  SAVE REAL VALUE FROM ARR.
-		R0 = DB->Input[i * COL + insteadPad(P0, COL)];
-		R1 = DB->Input[i * COL + insteadPad(P1, COL)];
-		R2 = DB->Input[i * COL + insteadPad(P2, COL)];
-		R3 = DB->Input[i * COL + insteadPad(P3, COL)];
+		R0 = DB->Input[insteadPad(P0, ROW) * COL + j];
+		R1 = DB->Input[insteadPad(P1, ROW) * COL + j];
+		R2 = DB->Input[insteadPad(P2, ROW) * COL + j];
+		R3 = DB->Input[insteadPad(P3, ROW) * COL + j];
 
 		// GET WEIGHT VALUE
 		W0 = getBSpl_weightVal(P0, orgPxPoint);
@@ -256,22 +241,21 @@ void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 
 		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
 		// get error
-		DB->RowScalingImg[i*CCol + j] = (UChar)calcVal;
+		DB->RowScalingImg[i*COL + j] = (UChar)calcVal;
 	}
 	else
 	{
-		orgPxPoint = i / CRow * ROW;
+		orgPxPoint = ((double)j *(double)COL) / (double)CCol;
 
 		P0 = (int)(orgPxPoint - 1);
 		P1 = (int)(orgPxPoint);
 		P2 = (int)(orgPxPoint + 1);
 		P3 = (int)(orgPxPoint + 2);
 
-
-		R0 = DB->RowScalingImg[(insteadPad(P0, ROW))*CCol + j];
-		R1 = DB->RowScalingImg[(insteadPad(P1, ROW))*CCol + j];
-		R2 = DB->RowScalingImg[(insteadPad(P2, ROW))*CCol + j];
-		R3 = DB->RowScalingImg[(insteadPad(P3, ROW))*CCol + j];
+		R0 = DB->Input[i * COL + insteadPad(P0, COL)];
+		R1 = DB->Input[i * COL + insteadPad(P1, COL)];
+		R2 = DB->Input[i * COL + insteadPad(P2, COL)];
+		R3 = DB->Input[i * COL + insteadPad(P3, COL)];
 
 		W0 = getBSpl_weightVal(P0, orgPxPoint);
 		W1 = getBSpl_weightVal(P1, orgPxPoint);
