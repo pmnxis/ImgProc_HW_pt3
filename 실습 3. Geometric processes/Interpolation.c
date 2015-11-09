@@ -166,6 +166,7 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 	{
 		// recheck col and row after go home
 		orgPxPoint = ((double)i *(double)ROW / (double)CRow);
+
 		P0 = (int)(orgPxPoint - 1);
 		P1 = (int)(orgPxPoint);
 		P2 = (int)(orgPxPoint + 1);
@@ -185,7 +186,7 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 
 		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
 		//  get error 
-		DB->RowScalingImg[i*COL + j] = (UChar)calcVal;
+		DB->RowScalingImg[i*COL + j] = fixtoUChar(calcVal);
 	}
 	else
 	{
@@ -196,10 +197,10 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 		P2 = (int)(orgPxPoint + 1);
 		P3 = (int)(orgPxPoint + 2);
 
-		R0 = DB->Input[i * COL + insteadPad(P0, COL)];
-		R1 = DB->Input[i * COL + insteadPad(P1, COL)];
-		R2 = DB->Input[i * COL + insteadPad(P2, COL)];
-		R3 = DB->Input[i * COL + insteadPad(P3, COL)];
+		R0 = DB->RowScalingImg[i * COL + insteadPad(P0, COL)];
+		R1 = DB->RowScalingImg[i * COL + insteadPad(P1, COL)];
+		R2 = DB->RowScalingImg[i * COL + insteadPad(P2, COL)];
+		R3 = DB->RowScalingImg[i * COL + insteadPad(P3, COL)];
 
 		W0 = get3cha_weightVal(P0, orgPxPoint, 0.5);
 		W1 = get3cha_weightVal(P1, orgPxPoint, 0.5);
@@ -207,7 +208,7 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 		W3 = get3cha_weightVal(P3, orgPxPoint, 0.5);
 
 		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
-		DB->AllScalingImg[i*CCol +j] = (UChar)calcVal;
+		DB->AllScalingImg[i*CCol + j] = fixtoUChar(calcVal);
 
 	}
 }
@@ -241,7 +242,7 @@ void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 
 		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
 		// get error
-		DB->RowScalingImg[i*COL + j] = (UChar)calcVal;
+		DB->RowScalingImg[i*COL + j] = fixtoUChar(calcVal);
 	}
 	else
 	{
@@ -252,10 +253,10 @@ void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 		P2 = (int)(orgPxPoint + 1);
 		P3 = (int)(orgPxPoint + 2);
 
-		R0 = DB->Input[i * COL + insteadPad(P0, COL)];
-		R1 = DB->Input[i * COL + insteadPad(P1, COL)];
-		R2 = DB->Input[i * COL + insteadPad(P2, COL)];
-		R3 = DB->Input[i * COL + insteadPad(P3, COL)];
+		R0 = DB->RowScalingImg[i * COL + insteadPad(P0, COL)];
+		R1 = DB->RowScalingImg[i * COL + insteadPad(P1, COL)];
+		R2 = DB->RowScalingImg[i * COL + insteadPad(P2, COL)];
+		R3 = DB->RowScalingImg[i * COL + insteadPad(P3, COL)];
 
 		W0 = getBSpl_weightVal(P0, orgPxPoint);
 		W1 = getBSpl_weightVal(P1, orgPxPoint);
@@ -263,7 +264,7 @@ void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 		W3 = getBSpl_weightVal(P3, orgPxPoint);
 
 		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
-		DB->AllScalingImg[i*CCol + j] = (UChar)calcVal;
+		DB->AllScalingImg[i*CCol + j] = fixtoUChar(calcVal);
 
 	}
 }
@@ -272,6 +273,12 @@ int insteadPad(double input, int fullSize) {
 	if (input < 0)return 0;
 	else if (input > fullSize - 1)return fullSize - 1;
 	else return (int)input;
+}
+
+UChar fixtoUChar(double input) {
+	if (input > 0xFF)return 0xFF;
+	else if (input < 0x00)return 0x00;
+	else return (UChar)input;
 }
 
 Double get3cha_weightVal(int input, Double orgPxAdr, Double alpha) {
@@ -302,7 +309,7 @@ Double getBSpl_weightVal(int input, Double orgPxAdr) {
 	}
 	//  ?1/6 |??|^3+|??|^2?2|??|  +  4/3
 	else if (1 <= temp && temp < 2) {
-		return ((-1)/6 * pow(temp, 3)) - (pow(temp, 2)) - (2*temp) - (4/3);
+		return ((-1)/6 * pow(temp, 3)) + (pow(temp, 2)) - (2*temp) + (4/3);
 	}
 	else if (2 <= temp) {
 		return 0;
