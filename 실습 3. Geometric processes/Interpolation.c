@@ -85,27 +85,47 @@ void Interpolation( Buf *DB )
 	fclose(bfp);
 }
 
-void NearesetNeighbor( Buf *DB, Int i, Int j, Double Spacing, Int Dir, Int CRow, Int CCol )
+void Bilinear(Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol)
 {
-	if( Dir )
+	//  i = new y
+	//  j = new x
+	Int rX, rY;  //  reverse X Y
+	double dLeft, dRight;
+	double temp;
+	if (Dir)  //  row
 	{
-		
+		temp = j / CRow*ROW;
+		rX = (int)temp;
+		dLeft = temp - rX;
+		if (dLeft == 0.00) {
+			DB->RowScalingImg[i*CRow + j] = DB->Input[i*ROW + rX];
+		}
+		else if (rX >= 0 && rX <= ROW - 2) {
+			dRight = 1.0 - dLeft;
+			temp = (DB->Input[i*ROW + rX])*dRight + (DB->Input[i*ROW + rX + 1] * dLeft);
+			DB->RowScalingImg[i*CRow + j] = (UChar)temp;
+		}
+		else if (rX >= CRow - 1)
+		{
+			DB->RowScalingImg[i*CRow + j] = DB->Input[i*ROW + rX];
+		}
 	}
-	else
+	else  //  all
 	{
-		
-	}
-}
-
-void Bilinear( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol )
-{
-	if( Dir )
-	{
-		
-	}
-	else
-	{
-		
+		temp = i / CCol*COL;
+		rY = (int)temp;
+		dUp = temp - rY;
+		if (dUp == 0.00) {
+			DB->AllScalingImg[i*CRow + j] = DB->RowScalingImg[rY*CRow + j];
+		}
+		else if (rY >= 0 && rY <= COL - 2) {
+			dDown = 1.0 - dUp;
+			temp = (DB->RowScalingImg[rY*CRow + j] * dDown + (DB->RowScalingImg[(rY + 1)*CRow + j])*dUp);
+			DB->AllScalingImg[i*CRow + j] = (UChar)temp;
+		}
+		else if (rY >= CCol - 1) {
+			DB->AllScalingImg[i*CRow + j] = DB->RowScalingImg[rY*CRow + j];
+		}
 	}
 }
 
