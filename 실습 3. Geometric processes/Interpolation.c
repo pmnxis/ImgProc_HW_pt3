@@ -11,7 +11,7 @@ void Interpolation( Buf *DB )
 {
 	FILE *afp, *bfp;
 	Int i, j, Num;
-	Double Rate, Spacing=0, SubSpacing=0;
+	Double Rate = 0;
 
 	fopen_s(&afp, "RowInterpolation.raw", "w" );
 	fopen_s(&bfp, "AllInterpolation.raw", "w" );
@@ -38,13 +38,13 @@ void Interpolation( Buf *DB )
 		
 			//  실수로  Dir을 함수내부에서 거꾸로 처리하게되서... 1->0 , 0->1합니다..
 			if( Num == 1 )
-				NearesetNeighbor( DB, i, j, Spacing, 1, DB->SRow, DB->SCol );
+				NearesetNeighbor( DB, i, j, 1, DB->SRow, DB->SCol );
 			else if( Num == 2 )
-				Bilinear( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol);
+				Bilinear( DB, i, j, 1, DB->SRow, DB->SCol);
 			else if( Num == 3 )
-				CubicConvolution( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol);
+				CubicConvolution( DB, i, j, 1, DB->SRow, DB->SCol);
 			else if( Num == 4 )
-				B_Spline( DB, i, j, Spacing, SubSpacing, 1, DB->SRow, DB->SCol);
+				B_Spline( DB, i, j, 1, DB->SRow, DB->SCol);
 		}
 	}
 
@@ -57,13 +57,13 @@ void Interpolation( Buf *DB )
 			
 
 			if( Num == 1 )
-				NearesetNeighbor( DB, i, j, Spacing, 0, DB->SRow, DB->SCol );
+				NearesetNeighbor( DB, i, j, 0, DB->SRow, DB->SCol );
 			else if( Num == 2 )
-				Bilinear( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, DB->SCol );
+				Bilinear( DB, i, j, 0, DB->SRow, DB->SCol );
 			else if( Num == 3 )
-				CubicConvolution( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, DB->SCol );
+				CubicConvolution( DB, i, j, 0, DB->SRow, DB->SCol );
 			else if( Num == 4 )
-				B_Spline( DB, i, j, Spacing, SubSpacing, 0, DB->SRow, DB->SCol );
+				B_Spline( DB, i, j, 0, DB->SRow, DB->SCol );
 		}
 	}
 
@@ -93,7 +93,7 @@ void Interpolation( Buf *DB )
 }
 
 
-void NearesetNeighbor(Buf *DB, Int i, Int j, Double Spacing, Int Dir, Int CRow, Int CCol)
+void NearesetNeighbor(Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol)
 {
 	Double temp = 0;
 	if (Dir)
@@ -111,7 +111,7 @@ void NearesetNeighbor(Buf *DB, Int i, Int j, Double Spacing, Int Dir, Int CRow, 
 	}
 }
 
-void Bilinear(Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol)
+void Bilinear(Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol)
 {
 	//  i = new y
 	//  j = new x
@@ -156,7 +156,7 @@ void Bilinear(Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir,
 	}
 }
 
-void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol )
+void CubicConvolution( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol )
 {
 	Int P0, P1, P2, P3;
 	Double W0, W1, W2, W3;
@@ -213,7 +213,7 @@ void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing,
 	}
 }
 
-void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol )
+void B_Spline( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol )
 {
 	Int P0, P1, P2, P3;
 	Double W0, W1, W2, W3;

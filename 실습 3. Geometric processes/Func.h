@@ -25,10 +25,10 @@ void Blurring( Buf *DB, Int MaskSize );
 
 void Interpolation( Buf *DB );
 
-void NearesetNeighbor( Buf *DB, Int i, Int j, Double Spacing, Int Dir, Int CRow, Int CCol );
-void Bilinear( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol );
-void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol );
-void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol );
+void NearesetNeighbor( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol );
+void Bilinear( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol );
+void CubicConvolution( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol );
+void B_Spline( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol );
 
 void Rotation( Buf *DB );
 
