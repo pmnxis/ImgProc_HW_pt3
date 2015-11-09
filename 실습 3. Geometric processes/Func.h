@@ -38,3 +38,5 @@ void Rotation_CubicConvolution( Buf *DB, Double EWweight, Double NSweight, Int S
 void Rotation_B_Spline( Buf *DB, Double EWweight, Double NSweight, Int SourcePoint, Int i, Int j );
 
 int insteadPad(double input, int fullSize);
+Double get3cha_weightVal(int input, Double orgPxAdr, Double alpha);
+Double getBSpl_weightVal(int input, Double orgPxAdr);
