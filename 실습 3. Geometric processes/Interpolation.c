@@ -111,11 +111,36 @@ void Bilinear( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 
 void CubicConvolution( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir, Int CRow, Int CCol )
 {
+	Int P0, P1, P2, P3;
 	Double W0, W1, W2, W3;
-	
+	Double R0, R1, R2, R3;
+	Double orgPxPoint, calcVal;
 	if( Dir )
 	{
+		// recheck col and row after go home
+		orgPxPoint = j / CCol * COL;
+		P1 = insteadPad(orgPxPoint, CCol);
+		P0 = insteadPad(orgPxPoint - 1, CCol);
+		P2 = insteadPad(orgPxPoint + 1, CCol);
+		P3 = insteadPad(orgPxPoint + 2, CCol);
 		
+		//  SAVE REAL VALUE FROM ARR.
+		R0 = DB->Input[i * COL + P0];
+		R1 = DB->Input[i * COL + P1];
+		R2 = DB->Input[i * COL + P2];
+		R3 = DB->Input[i * COL + P3];
+
+		// GET WEIGHT VALUE
+		W0 = get3cha_weightVal(W0, orgPxPoint, 0.5);
+		W1 = get3cha_weightVal(W1, orgPxPoint, 0.5);
+		W2 = get3cha_weightVal(W2, orgPxPoint, 0.5);
+		W3 = get3cha_weightVal(W3, orgPxPoint, 0.5);
+
+		calcVal = R0*W0 + R1 * W1 + R2*W2 + R3*W3;
+		
+
+
+
 	}
 	else
 	{
@@ -135,4 +160,28 @@ void B_Spline( Buf *DB, Int i, Int j, Double Spacing, Double SubSpacing, Int Dir
 	{
 	
 	}
+}
+
+int insteadPad(double input, int fullSize) {
+	if (input < 0)return 0;
+	else if (input > fullSize - 1)return fullSize - 1;
+	else return (int)input;
+}
+
+Double get3cha_weightVal(int input, Double orgPxAdr, Double alpha) {
+	double temp = orgPxAdr - input;
+	if (temp < 0)temp = temp * (-1);
+
+	//  (??+2) |??|^3?(??+3) |??|^2+1,  0¡Â|??|<1
+	if (0 <= temp && temp < 1) {
+		return ((alpha + 2)*pow(temp, 3)) - ((alpha + 3)*pow(temp, 2)) + 1;
+	}
+	//  ??|??|^3?5??|??|^2+8??|??|?4??,   1¡Â|??|<2
+	else if (1<=temp && temp < 2) {
+		return (alpha * pow(temp, 3)) - (5 * alpha*pow(temp, 2)) + (8 * alpha*temp) - (4 * alpha);
+	}
+	else if (2 <= temp) {
+		return 0;
+	}
+	return 0;
 }

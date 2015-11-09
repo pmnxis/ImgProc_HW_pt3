@@ -36,3 +36,5 @@ void Rotation_NearesetNeighbor( Buf *DB, Double EWweight, Double NSweight, Int S
 void Rotation_Bilinear( Buf *DB, Double EWweight, Double NSweight, Int SourcePoint, Double NW, Double NE, Double SW, Double SE, Int i, Int j );
 void Rotation_CubicConvolution( Buf *DB, Double EWweight, Double NSweight, Int SourcePoint, Int i, Int j );
 void Rotation_B_Spline( Buf *DB, Double EWweight, Double NSweight, Int SourcePoint, Int i, Int j );
+
+int insteadPad(double input, int fullSize);
