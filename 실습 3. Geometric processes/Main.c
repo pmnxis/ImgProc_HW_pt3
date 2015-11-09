@@ -28,8 +28,8 @@ void SubMain( Buf *DB )
 	{
 		ImgPadding( DB, 3 );
 		Blurring( DB, 3 );
-
 		memcpy( DB->Input, DB->Output, sizeof(UChar) * ROW * COL );
+
 	}
 
 	Interpolation( DB );

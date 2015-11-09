@@ -78,3 +78,9 @@ void ImgPadding( Buf *DB, Int MaskSize )
 		}
 	}
 }
+
+double Clamping(double * data) {
+	if (*data > 255)*data = 255;
+	if (*data < 0)*data = 0;
+	return *data;
+}

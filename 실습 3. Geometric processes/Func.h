@@ -16,13 +16,15 @@ typedef struct _Buffer
 }Buffer;
 
 typedef Buffer Buf;
+#define InfOne 0.11111111111
 
 void SubMain( Buf *DB );
 
 void BufCon( Buf *DB, Int OrderFlag );
 void ImgPadding( Buf *DB, Int MaskSize );
+double Clamping(double * data);
 void Blurring( Buf *DB, Int MaskSize );
-
+void Convolution(Buf *DB, Int MaskSize, Double * FilterMask, int arithVal);
 void Interpolation( Buf *DB );
 
 void NearesetNeighbor( Buf *DB, Int i, Int j, Int Dir, Int CRow, Int CCol );
